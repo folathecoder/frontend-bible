@@ -1,5 +1,7 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+/* @react-client */
+import Image from 'next/image';
+import styles from './page.module.css';
+import Test from '@/components/test';
 
 export default function Home() {
   return (
@@ -90,6 +92,8 @@ export default function Home() {
           </p>
         </a>
       </div>
+
+      <Test />
     </main>
-  )
+  );
 }

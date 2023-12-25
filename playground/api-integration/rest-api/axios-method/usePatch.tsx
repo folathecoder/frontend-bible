@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
+import axios from 'axios';
 import type { ErrorType } from '@/api-integration/types';
 
 interface PropType {
-  resourceId: string; // Assuming the resource identifier is a string
+  postData: PostDataType;
 }
 
 // Define the structure of the return type for the hook
@@ -11,10 +12,17 @@ interface ReturnType {
   isSuccess: boolean;
   isError: ErrorType;
   isLoading: boolean;
-  handleDeleteData: () => void; // Updated function name to reflect DELETE
+  handlePatchData: () => void; // Updated function name to reflect PATCH
 }
 
-const useDelete = ({ resourceId }: PropType): ReturnType => {
+// Define the structure of the data type
+interface PostDataType {
+  title: string;
+  slug: string;
+  image_url: string;
+}
+
+const usePatch = ({ postData }: PropType): ReturnType => {
   const [data, setData] = useState<[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -23,16 +31,16 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
     message: '',
   });
 
-  const handleDeleteData = useCallback(async () => {
+  const handlePatchData = useCallback(async () => {
     try {
       // Initialize the loading state on start
       setIsLoading(true);
 
-      // Delete Data from the backend via the endpoint using fetch
-      const response = await fetch(
-        `https://blocktools.fly.dev/blogs/${resourceId}`,
+      // Patch Data to the backend via the endpoint using Axios
+      const response = await axios.patch(
+        'https://blocktools.fly.dev/blogs/',
+        postData,
         {
-          method: 'DELETE',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
@@ -42,9 +50,9 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
       );
 
       // Check if the response was successful
-      if (response.ok) {
+      if (response.status === 200) {
         // Get the data from the response if successful
-        const dataResponse = await response.json();
+        const dataResponse = response.data;
         setData(dataResponse);
 
         // Set success state
@@ -70,10 +78,12 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
       // Terminate the loading state on end
       setIsLoading(false);
     }
-  }, [resourceId]);
+  }, [postData]);
 
   // Return the state values for external use
-  return { data, isSuccess, isError, isLoading, handleDeleteData };
+  return { data, isSuccess, isError, isLoading, handlePatchData };
 };
 
-export default useDelete; // Updated hook name to useDelete
+export default usePatch; // Updated hook name to usePatch
+
+// In the PATCH request, you only send the fields that have changed, and the server updates those specific fields on the existing resource. This can be more bandwidth-efficient compared to sending the entire resource in a PUT request, especially when dealing with large resources.

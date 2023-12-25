@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
+import axios from 'axios';
 import type { ErrorType } from '@/api-integration/types';
 
 interface PropType {
-  resourceId: string; // Assuming the resource identifier is a string
+  postData: PostDataType;
 }
 
 // Define the structure of the return type for the hook
@@ -11,10 +12,17 @@ interface ReturnType {
   isSuccess: boolean;
   isError: ErrorType;
   isLoading: boolean;
-  handleDeleteData: () => void; // Updated function name to reflect DELETE
+  handlePostData: () => void;
 }
 
-const useDelete = ({ resourceId }: PropType): ReturnType => {
+// Define the structure of the data type
+interface PostDataType {
+  title: string;
+  slug: string;
+  image_url: string;
+}
+
+const usePost = ({ postData }: PropType): ReturnType => {
   const [data, setData] = useState<[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -23,16 +31,16 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
     message: '',
   });
 
-  const handleDeleteData = useCallback(async () => {
+  const handlePostData = useCallback(async () => {
     try {
       // Initialize the loading state on start
       setIsLoading(true);
 
-      // Delete Data from the backend via the endpoint using fetch
-      const response = await fetch(
-        `https://blocktools.fly.dev/blogs/${resourceId}`,
+      // Post Data to the backend via the endpoint using Axios
+      const response = await axios.post(
+        'https://blocktools.fly.dev/blogs/',
+        postData,
         {
-          method: 'DELETE',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
@@ -42,9 +50,9 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
       );
 
       // Check if the response was successful
-      if (response.ok) {
+      if (response.status === 200) {
         // Get the data from the response if successful
-        const dataResponse = await response.json();
+        const dataResponse = response.data;
         setData(dataResponse);
 
         // Set success state
@@ -70,10 +78,10 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
       // Terminate the loading state on end
       setIsLoading(false);
     }
-  }, [resourceId]);
+  }, [postData]);
 
   // Return the state values for external use
-  return { data, isSuccess, isError, isLoading, handleDeleteData };
+  return { data, isSuccess, isError, isLoading, handlePostData };
 };
 
-export default useDelete; // Updated hook name to useDelete
+export default usePost;

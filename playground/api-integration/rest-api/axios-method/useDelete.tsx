@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import axios from 'axios';
 import type { ErrorType } from '@/api-integration/types';
 
 interface PropType {
@@ -28,11 +29,10 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
       // Initialize the loading state on start
       setIsLoading(true);
 
-      // Delete Data from the backend via the endpoint using fetch
-      const response = await fetch(
+      // Delete Data from the backend via the endpoint using Axios
+      const response = await axios.delete(
         `https://blocktools.fly.dev/blogs/${resourceId}`,
         {
-          method: 'DELETE',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
@@ -42,9 +42,9 @@ const useDelete = ({ resourceId }: PropType): ReturnType => {
       );
 
       // Check if the response was successful
-      if (response.ok) {
+      if (response.status === 200) {
         // Get the data from the response if successful
-        const dataResponse = await response.json();
+        const dataResponse = response.data;
         setData(dataResponse);
 
         // Set success state
